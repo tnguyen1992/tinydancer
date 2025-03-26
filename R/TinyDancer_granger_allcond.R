@@ -6,26 +6,24 @@ library(pracma)
 library(lmtest)
 library(signal)
 
-env_hopp_music <- read_csv("C:/Users/tnguyen/OneDrive - Fondazione Istituto Italiano Tecnologia/IIT_Postdoc/WP4/Deeplabcut/TinyDancer_PM/AcousticStim/env_hopp_music.csv", 
+env_hopp_music <- read_csv("C:/Users/User/OneDrive - Fondazione Istituto Italiano Tecnologia/IIT_Postdoc/WP4/Deeplabcut/TinyDancer_PM/AcousticStim/env_hopp_music.csv", 
                            col_names = FALSE)
-env_hopp_control <- read_csv("C:/Users/tnguyen/OneDrive - Fondazione Istituto Italiano Tecnologia/IIT_Postdoc/WP4/Deeplabcut/TinyDancer_PM/AcousticStim/env_hopp_control.csv", 
+env_hopp_control <- read_csv("C:/Users/User/OneDrive - Fondazione Istituto Italiano Tecnologia/IIT_Postdoc/WP4/Deeplabcut/TinyDancer_PM/AcousticStim/env_hopp_control.csv", 
                              col_names = FALSE)
-env_lola_music <- read_csv("C:/Users/tnguyen/OneDrive - Fondazione Istituto Italiano Tecnologia/IIT_Postdoc/WP4/Deeplabcut/TinyDancer_PM/AcousticStim/env_lola_music.csv", 
+env_lola_music <- read_csv("C:/Users/User/OneDrive - Fondazione Istituto Italiano Tecnologia/IIT_Postdoc/WP4/Deeplabcut/TinyDancer_PM/AcousticStim/env_lola_music.csv", 
                            col_names = FALSE)
-env_lola_control <- read_csv("C:/Users/tnguyen/OneDrive - Fondazione Istituto Italiano Tecnologia/IIT_Postdoc/WP4/Deeplabcut/TinyDancer_PM/AcousticStim/env_lola_control.csv", 
+env_lola_control <- read_csv("C:/Users/User/OneDrive - Fondazione Istituto Italiano Tecnologia/IIT_Postdoc/WP4/Deeplabcut/TinyDancer_PM/AcousticStim/env_lola_control.csv", 
                              col_names = FALSE)
 
 
-plot(env_hopp_music$X1, type='l', col="red")
-lines(env_hopp_lp$X1, col="orange")
-lines(env_hopp_hp$X1, col="green")
-lines(stim$X1*0.01, col="blue")
+# plot(env_hopp_music$X1, type='l', col="red")
+# lines(env_hopp_lp$X1, col="orange")
+# lines(env_hopp_hp$X1, col="green")
+# lines(stim$X1*0.01, col="blue")
 
-
-
-sd(env_hopp_music$X1)
-sd(env_hopp_lp$X1)
-sd(env_hopp_hp$X1)
+# sd(env_hopp_music$X1)
+# sd(env_hopp_lp$X1)
+# sd(env_hopp_hp$X1)
 
 # Replace "your_folder_path" with the actual path to your folder
 ages<- c('3m', "6m", "12m")
@@ -38,7 +36,7 @@ for (age in ages) {
   if (age == "6m") {
     NB <- 25
   } else {
-    NB = 24
+    NB <- 24
   }
   # Set condition
   # Set the range of baby numbers
@@ -67,16 +65,7 @@ for (age in ages) {
     stim_ts <- ts(stim[1:524,])         
     
     # acf(stim_ts,plot = T, demean=T,lag.max=50)
-    # your_sampling_frequency <- 25  # Replace with your actual sampling frequency
-    # 
-    # # Design a low-pass Butterworth filter
-    # cutoff_frequency <- 5  # Cutoff frequency in Hz
-    # filter_order <- 4      # Filter order
-    # 
-    # b <- butter(filter_order, cutoff_frequency / (your_sampling_frequency / 2), type = "low")
-    # 
-    # # Apply the filter using filtfilt
-    # filtered_stim <- filtfilt(b, stim_ts)
+    
     # Loop through each baby
     for (baby_number in baby_numbers) {
       pattern <- paste0(condition, ".*\\.csv$")
@@ -92,13 +81,13 @@ for (age in ages) {
           df <- read.csv(file_names[i])
           transposed_df <- t(df)
           transposed_df <- transposed_df[-1, ]  # Exclude the first row
-          transposed_vel <- diff(transposed_df)
+          transposed_vel <- diff(transposed_df) # get to velocity
           
           velocity_PM <- transposed_vel[, PM]
+          velocity_PM_sample <- sample(velocity_PM)
           
           for (l in seq_along(lags)) {
             # Perform Granger causality test
-            # filtered_stim <- ts(stim_ts) 
             tsDat <- ts.union(stim_ts, velocity_PM) 
             tsVAR <- vars::VAR(tsDat, p = l)
             gctest <- vars::causality(tsVAR, cause = "stim_ts")$Granger
@@ -377,7 +366,8 @@ cond_all_df <- rbind(cond_3m_df,cond_6m_df,cond_12m_df)
 # write.csv2(cond_all_df,"granger_mus_F_range_minuslags_upsample.csv")
 # write.csv2(cond_all_df,"granger_mus_F_range_upsample_110324.csv")
 
-write.csv2(cond_all_df,"granger_mus_F_minusrange_upsample_110324.csv")
+# write.csv2(cond_all_df,"granger_mus_F_minusrange_upsample_110324.csv")
+write.csv2(cond_all_df,"granger_mus_F_samplerange_010724.csv")
 
 ##########################################
 library(ggplot2)
@@ -389,7 +379,7 @@ library(emmeans)
 library(DescTools)
 library(readr)
 
-setwd("~/OneDrive - Fondazione Istituto Italiano Tecnologia/IIT_Postdoc/WP4/Deeplabcut/TinyDancer_PM")
+setwd("~/OneDrive - Fondazione Istituto Italiano Tecnologia/IIT_Postdoc/Projects/WP4/Deeplabcut/TinyDancer_PM")
 granger_mus_F_range <- read_delim("granger_mus_F_range_upsample_110324.csv", 
                                   delim = ";", escape_double = FALSE, col_types = cols(...1 = col_skip()), 
                                   locale = locale(decimal_mark = ",", grouping_mark = "."), 
@@ -429,9 +419,9 @@ library(lme4)
 ds_final$Category <- rep(NA, nrow(ds_final))
 
 # Identify Upper body, Lower body, and Hybrid PMs
-upper_body_pms <- c(1, 2, 5, 6)
+upper_body_pms <- c(1, 2, 3, 5, 6)
 lower_body_pms <- c(4, 7, 9, 10)
-hybrid_pms <- c(3, 8)
+hybrid_pms <- c( 8)
 
 # Assign categories based on PM numbers
 ds_final$Category[ds_final$PM %in% upper_body_pms] <- "Upper body"
@@ -443,65 +433,106 @@ ds_final$Category <- factor(ds_final$Category, levels = c("Upper body", "Lower b
 
 ds_final$Lags.f <- factor(ds_final$Lags)
 
-# m1 <- lmer(X ~  age  * Lags.f * PM * direction + (1|Child), 
-#            data=ds_final[ds_final$cond=="Music",])
-# Anova(m1,3)
-# summary(m1)
-# emmeans(m1, pairwise ~ direction|Lags.f|PM|age, adjust="sidak")
+ds_final_check <- ds_final[!ds_final$Child==20,]
+ds_final_check <- ds_final_check[!ds_final_check$Child==103,]
+ds_final_check <- ds_final_check[!ds_final_check$Child==211,]
+ds_final_check <- ds_final_check[!ds_final_check$Child==214,]
+
+m1 <- lmer(X ~  age  * PM * direction + +(1|PM)+(1|Child),
+           data=ds_final_check[ds_final_check$cond=="Music",])
+Anova(m1,3)
+summary(m1)
+emmeans(m1, pairwise ~ direction, adjust="sidak")
+
+
+plotdf <- aggregate(X ~ cond * age * Lags.f   * direction,  data=ds_final, FUN="mean", na.rm=T)
+plotdf.sd <- aggregate(X ~ cond * age * Lags.f  * direction,  data=ds_final, FUN="sd", na.rm=T)
+colnames(plotdf.sd) <- list("cond", "age", "Lags.f","direction","SD")
+plotdf.f <- merge(plotdf,plotdf.sd, by=c("age", "Lags.f","direction", "cond"),all.X=T)
+plotdf.f$Lags <- as.numeric(plotdf.f$Lags.f)
+ggplot(data = plotdf.f[plotdf.f$Lags<20 &plotdf.f$cond=="Music",] , aes(x = Lags, y = X, group=interaction(direction,age), col=direction)) +
+  # geom_point()+
+  geom_line() +
+  geom_ribbon(aes(ymin = X - (SD/sqrt(24)), ymax = X + (SD/sqrt(24))), alpha = 0.2) +  
+  # geom_line(aes(y = sig_line),
+  #           color = "black", size = 1) +
+  labs(title = "", x = "Lags in frames (sr: 25 Hz)", y = "Granger Causality F-value")+
+  theme_bw()+
+  theme(legend.position = "right",panel.grid = element_blank(),strip.text=element_blank())+
+  facet_grid(~age)
+
+
 library(MKinfer)
 
 library(dplyr)
-# ds_final.superPM <- aggregate(X ~ cond * age * Lags.f * Child * direction,  data=ds_final, FUN="mean", na.rm=T)
-result <- ds_final %>%
-  group_by(Lags.f, age,direction) %>%
-  summarize(t_test_p_value = boot.t.test(X ~ cond, alternative="two-way")$p.value)
+ds_final.superPM <- aggregate(X ~ cond * age * Lags.f * Child * direction,  data=ds_final, FUN="mean", na.rm=T)
+ds_final.music2move<-ds_final.superPM[ds_final.superPM$direction=="music2move",]
+ds_final$cond <- factor(ds_final$cond)
+
+ds_final_check <- ds_final.music2move[!ds_final.music2move$Child==20,]
+ds_final_check <- ds_final_check[!ds_final_check$Child==103,]
+ds_final_check <- ds_final_check[!ds_final_check$Child==211,]
+ds_final.music2move <- ds_final_check[!ds_final_check$Child==214,]
+
+
+##### Plots per PM
+
+result <- ds_final.music2move %>%
+  group_by(Lags.f, age) %>%
+  summarize(t_test_p_value = boot.t.test(X ~ cond)$boot.p.value)
 
 # Display the result
 print(result)
 
-##### Plots
-
-
 result <- result %>%
   mutate(sig_line = ifelse(t_test_p_value < 0.005, 0.5, NA))
-plotdf <- aggregate(X ~ cond * age * Lags.f  * direction,  data=ds_final, FUN="mean", na.rm=T)
+plotdf <- aggregate(X ~ cond * age * Lags.f  ,  data=ds_final, FUN="mean", na.rm=T)
 
-plotdf.sd <- aggregate(X ~ cond * age * Lags.f  * direction,  data=ds_final, FUN="SD", na.rm=T)
-colnames(plotdf.sd) <- list("cond", "age", "Lags.f","direction","SD")
+plotdf.sd <- aggregate(X ~ cond * age * Lags.f  ,  data=ds_final, FUN="sd", na.rm=T)
+colnames(plotdf.sd) <- list("cond", "age", "Lags.f","SD")
 
-plotdf.f <- merge(plotdf,plotdf.sd, by=c("age", "Lags.f","direction", "cond"),all.X=T)
-plotdf.f <- merge(plotdf.f,result, by=c("age", "Lags.f", "direction"))
-
-
-# ggplot(data = plotdf.f[plotdf.f$cond=="Control",], aes(x = Lags.f, y = X, group=interaction(direction,age), col=interaction(direction))) +
-#   # geom_point()+
-#   geom_line() +
-#   geom_ribbon(aes(ymin = X - (SD/sqrt(24)), ymax = X + (SD/sqrt(24))), alpha = 0.2) +  
-#   geom_vline(xintercept=0,linetype="dotted")+
-#   geom_vline(xintercept="0.44",linetype="dotted")+
-#   geom_vline(xintercept="0.88",linetype="dotted")+
-#   geom_vline(xintercept="1.76",linetype="dotted")+
-#   geom_vline(xintercept="3.52",linetype="dotted")+
-#   geom_line(aes(y = sig_line),
-#             color = "red", size = 1) +
-#   labs(title = "", x = "Lags in seconds", y = "Granger Causality F-value")+
-#   theme_minimal()+
-#   theme(legend.position = "top")+
-#   facet_grid(age~Category)
-
+plotdf.f <- merge(plotdf,plotdf.sd, by=c("age", "Lags.f", "cond"),all.X=T)
+plotdf.f <- merge(plotdf.f,result, by=c("age", "Lags.f"))
 
 plotdf.f$Lags <- as.numeric(plotdf.f$Lags.f)
-ggplot(data = plotdf.f[plotdf.f$direction=="music2move" & plotdf.f$Lags<15 ,], aes(x = Lags, y = X, group=interaction(cond,age), col=cond)) +
+ggplot(data = plotdf.f[plotdf.f$Lags<15 ,], aes(x = Lags, y = X, group=interaction(cond,age), col=cond)) +
   # geom_point()+
   geom_line() +
   geom_ribbon(aes(ymin = X - (SD/sqrt(24)), ymax = X + (SD/sqrt(24))), alpha = 0.2) +  
-  # geom_vline(xintercept=0,linetype="dotted")+
-  # geom_vline(xintercept="0.44",linetype="dotted")+
-  # geom_vline(xintercept="0.88",linetype="dotted")+
-  # geom_vline(xintercept="1.76",linetype="dotted")+
-  # geom_vline(xintercept="3.52",linetype="dotted")+
   geom_line(aes(y = sig_line),
             color = "black", size = 1) +
+  labs(title = "", x = "Lags in frames (sr: 25 Hz)", y = "Granger Causality F-value")+
+  theme_bw()+
+  theme(legend.position = "right",panel.grid = element_blank(),strip.text=element_blank())+
+  facet_grid(1~age)
+
+##### Plots for super PM
+
+result <- ds_final.music2move %>%
+  group_by(Lags.f, age) %>%
+  summarize(t_test_t_value = boot.t.test(X ~ cond)$statistic,
+            t_test_df_value = boot.t.test(X ~ cond)$parameter,
+            t_test_p_value = boot.t.test(X ~ cond)$boot.p.value)
+
+result <- result %>%
+  mutate(sig_line = ifelse(t_test_p_value < 0.005, 0.5, NA))
+plotdf <- aggregate(X ~ cond * age * Lags.f  ,  data=ds_final, FUN="mean", na.rm=T)
+
+plotdf.sd <- aggregate(X ~ cond * age * Lags.f  ,  data=ds_final, FUN="sd", na.rm=T)
+colnames(plotdf.sd) <- list("cond", "age", "Lags.f","SD")
+
+plotdf.f <- merge(plotdf,plotdf.sd, by=c("age", "Lags.f", "cond"),all.X=T)
+plotdf.f <- merge(plotdf.f,result, by=c("age", "Lags.f"))
+
+
+
+plotdf.f$Lags <- as.numeric(plotdf.f$Lags.f)
+ggplot(data = plotdf.f[plotdf.f$Lags<15 ,], aes(x = Lags, y = X, group=interaction(cond,age), col=cond)) +
+  # geom_point()+
+  geom_line() +
+  geom_ribbon(aes(ymin = X - (SD/sqrt(24)), ymax = X + (SD/sqrt(24))), alpha = 0.2) +  
+  # geom_line(aes(y = sig_line),
+  #           color = "black", size = 1) +
   labs(title = "", x = "Lags in frames (sr: 25 Hz)", y = "Granger Causality F-value")+
   theme_bw()+
   theme(legend.position = "right",panel.grid = element_blank(),strip.text=element_blank())+
@@ -578,7 +609,7 @@ granger_freq_F_range_minuslags$direction <- "move2music"
 
 ds_final <- rbind(granger_mus_F_range_minuslags,granger_mus_F_range,granger_freq_F_range_minuslags,granger_freq_F_range)
 # ds_final <- granger_mus_F_range
-# ds_final <- rbind(granger_freq_F_range_minuslags,granger_freq_F_range)
+ds_final <- rbind(granger_freq_F_range_minuslags,granger_freq_F_range)
 # ds_final <- rbind(granger_mus_F_range_minuslags,granger_mus_F_range)
 
 
@@ -586,6 +617,7 @@ ds_final$PM <- as.factor(ds_final$PM)
 # ds_final$X.w <- Winsorize(ds_final$X,na.rm=T)
 ds_final$age <- factor(ds_final$age, levels=c('3m', '6m', '12m'))
 ds_final$Lags <- as.numeric(ds_final$Lags)
+ds_final$cond <- as.factor(ds_final$cond)
 
 ##### ttest
 # Assuming your data frame is named ds_final
@@ -605,9 +637,9 @@ library(emmeans)
 ds_final$Category <- rep(NA, nrow(ds_final))
 
 # Identify Upper body, Lower body, and Hybrid PMs
-upper_body_pms <- c(1, 2, 5, 6)
+upper_body_pms <- c(1, 2, 3, 5, 6)
 lower_body_pms <- c(4, 7, 9, 10)
-hybrid_pms <- c(3, 8)
+hybrid_pms <- c(8)
 
 # Assign categories based on PM numbers
 ds_final$Category[ds_final$PM %in% upper_body_pms] <- "Upper body"
@@ -618,199 +650,200 @@ ds_final$Category[ds_final$PM %in% hybrid_pms] <- "Hybrid"
 ds_final$Category <- factor(ds_final$Category, levels = c("Upper body", "Lower body", "Hybrid"))
 
 ds_final$Lags.f <- factor(ds_final$Lags)
-xdata <- ds_final[ds_final$Lags >= 0.16 & ds_final$Lags <= 0.20 ,]
-xdata <- aggregate(X ~ age * Child * PM * Category * direction * cond,  data=xdata, FUN="mean", na.rm=T)
-
-m0 <- lmer(X ~  direction + (1|Child),
-           data=ds_final)
-Anova(m0,2)
-summary(m0)
-emmeans(m0, pairwise ~ direction, adjust="sidak")
-
-data <- data.frame(
-  direction = c("Music to Movement", "Movement to Music"),
-  mean = c(1.07, 1.04 ),
-  se = c(0.00470, 0.00643)
-)
-data <- data.frame(
-  direction = c("Music to Movement", "Movement to Music"),
-  mean = c(1.06, 1.05 ),
-  se = c(0.00546, 0.00546)
-)
-ggplot(data, aes(x = direction, y = mean, col = direction)) +
-  geom_point(stat = "identity", position = "dodge", width = 0.7) +
-  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), position = position_dodge(0.7), width = 0.25) +
-  labs(title = "Information flow direction",
-       x = "Direction",
-       y = "Mean and SE") +
-  theme_minimal()+
-  theme(legend.position = "none")+
-  ylim(1,1.1)
-
-
-library(datawizard)
-xdata$X.w <- winsorize(xdata$X, method="zscore", threshold=3)
-
-xdata.f<-xdata[xdata$cond=="HighPitch" | xdata$cond=="LowPitch" ,]
-xdata.m<-xdata[xdata$cond=="Music" | xdata$cond=="Control" ,]
-
-xdata.m$X.w2 <- winsorize(xdata.m$X, method="zscore", threshold=3)
-xdata.f$X.w2 <- winsorize(xdata.f$X, method="zscore", threshold=3)
-
-hist(xdata.m$X)
-hist(xdata.m$X.w)
-hist(xdata.m$X.w2)
-
-m1 <- lmer(X.w2 ~  age  * PM * cond + (1+cond|Child),
-           data=xdata.m[xdata.m$direction=="music2move",])
-Anova(m1,3)
-summary(m1)
-emmeans(m1, pairwise ~ cond|PM|age, adjust="fdr")
-emmeans(m1, pairwise ~ cond|age, adjust="fdr")
-
-
-hist(xdata.f$X)
-range(xdata.f$X)
-mean(xdata.f$X)+3*sd(xdata.f$X)
-
-m2 <- lmer(X.w2 ~  age  * PM * cond + (1+cond|Child),
-           data=xdata.f[xdata.f$direction=="music2move",])
-Anova(m2,2)
-summary(m2)
-emmeans(m2, pairwise ~ cond, adjust="fdr")
-emmeans(m2, pairwise ~ cond|PM|age, adjust="fdr")
-emmeans(m2, pairwise ~ cond|age, adjust="fdr")
-
-
+xdata <- ds_final[ds_final$Lags >= 0.20 & ds_final$Lags <= 0.20 ,]
+xdata <- aggregate(X ~ age * Child * PM * Category *direction  * cond,  data=xdata, FUN="mean", na.rm=T)
+# 
+# m0 <- lmer(X ~  direction + (1|Child),
+#            data=ds_final)
+# Anova(m0,2)
+# summary(m0)
+# emmeans(m0, pairwise ~ direction, adjust="sidak")
+# 
+# data <- data.frame(
+#   direction = c("Music to Movement", "Movement to Music"),
+#   mean = c(1.07, 1.04 ),
+#   se = c(0.00470, 0.00643)
+# )
+# data <- data.frame(
+#   direction = c("Music to Movement", "Movement to Music"),
+#   mean = c(1.06, 1.05 ),
+#   se = c(0.00546, 0.00546)
+# )
+# ggplot(data, aes(x = direction, y = mean, col = direction)) +
+#   geom_point(stat = "identity", position = "dodge", width = 0.7) +
+#   geom_errorbar(aes(ymin = mean - se, ymax = mean + se), position = position_dodge(0.7), width = 0.25) +
+#   labs(title = "Information flow direction",
+#        x = "Direction",
+#        y = "Mean and SE") +
+#   theme_minimal()+
+#   theme(legend.position = "none")+
+#   ylim(1,1.1)
+# 
+# 
+# library(datawizard)
+# xdata$X.w <- winsorize(xdata$X, method="zscore", threshold=3)
+# 
+# xdata.f<-xdata[xdata$cond=="HighPitch" | xdata$cond=="LowPitch" ,]
+# xdata.m<-xdata[xdata$cond=="Music" | xdata$cond=="Control" ,]
+# 
+# xdata.m$X.w2 <- winsorize(xdata.m$X, method="zscore", threshold=3)
+# xdata.f$X.w2 <- winsorize(xdata.f$X, method="zscore", threshold=3)
+# 
+# hist(xdata.m$X)
+# hist(xdata.m$X.w)
+# hist(xdata.m$X.w2)
+# 
+# m1 <- lmer(X.w2 ~  age  * PM * cond + (1+cond|Child),
+#            data=xdata.m[xdata.m$direction=="music2move",])
+# Anova(m1,3)
+# summary(m1)
+# emmeans(m1, pairwise ~ cond|PM|age, adjust="fdr")
+# emmeans(m1, pairwise ~ cond|age, adjust="fdr")
+# 
+# 
+# hist(xdata.f$X)
+# range(xdata.f$X)
+# mean(xdata.f$X)+3*sd(xdata.f$X)
+# 
+# m2 <- lmer(X.w2 ~  age  * PM * cond + (1+cond|Child),
+#            data=xdata.f[xdata.f$direction=="music2move",])
+# Anova(m2,2)
+# summary(m2)
+# emmeans(m2, pairwise ~ cond, adjust="fdr")
+# emmeans(m2, pairwise ~ cond|PM|age, adjust="fdr")
+# emmeans(m2, pairwise ~ cond|age, adjust="fdr")
 
 
-# plot
-desired_order <- c("3m", "6m", "12m")
-xdata.m$age <- ordered(xdata.m$age, levels = desired_order)
-xdata.f$age <- ordered(xdata.f$age, levels = desired_order)
-
-xdata.m_summary <- ddply(xdata.m,.(PM,cond,age, direction),summarize,avg_value=mean(X,na.rm=TRUE),se_value=sd(X,na.rm=TRUE)/length(X))
-xdata.f_summary <- ddply(xdata.f,.(PM,cond,age, direction),summarize,avg_value=mean(X,na.rm=TRUE),se_value=sd(X,na.rm=TRUE)/length(X))
-
-xdata.m_summary_superPM <- ddply(xdata.m,.(cond,age,direction),summarize,avg_value=mean(X,na.rm=TRUE),se_value=sd(X,na.rm=TRUE)/length(X))
-xdata.f_summary_superPM <- ddply(xdata.f,.(cond,age,direction),summarize,avg_value=mean(X,na.rm=TRUE),se_value=sd(X,na.rm=TRUE)/length(X))
-
-
-ggplot(xdata.m_summary_superPM[xdata.m_summary_superPM$direction=="music2move",], aes(x = age, y = avg_value, fill = cond, group = cond)) +
-  geom_col(position="dodge", width=0.6)+ # , position=position_jitter(5)
-  geom_errorbar(aes(ymax=avg_value+se_value,ymin=avg_value-se_value),
-                position="dodge",width=0.5, linewidth=0.5)+
-  # geom_boxplot() +
-  # geom_errorbar(aes(ymin = mean - se, ymax = mean + se), position = position_dodge(0.7), width = 0.25) +
-  labs(title = "GC Music vs Control",
-       x = "Conditions",
-       y = "Granger F-Values") +
-  theme_minimal()+
-  theme(legend.position = "right",panel.grid = element_blank(),strip.text=element_blank())+
-  ylim(0,1.5)
-
-ggplot(xdata.m_summary[xdata.m_summary$direction=="music2move",], aes(x = age, y = avg_value, fill = cond, group = cond)) +
-  geom_col(position="dodge", width=0.6)+ # , position=position_jitter(5)
-  geom_errorbar(aes(ymax=avg_value+se_value,ymin=avg_value-se_value),
-                position="dodge",width=0.5, linewidth=0.5)+
-  # geom_boxplot() +
-  # geom_errorbar(aes(ymin = mean - se, ymax = mean + se), position = position_dodge(0.7), width = 0.25) +
-  labs(title = "GC Music vs Control",
-       x = "Conditions",
-       y = "Granger F-Values") +
-  theme_minimal()+
-  theme(legend.position = "right",panel.grid = element_blank(),strip.text=element_blank())+
-  facet_grid(PM~"")
-
-
-ggplot(xdata.f_summary_superPM[xdata.m_summary_superPM$direction=="music2move",], aes(x = age, y = avg_value, fill = cond, group = cond)) +
-  geom_col(position="dodge", width=0.6)+ # , position=position_jitter(5)
-  geom_errorbar(aes(ymax=avg_value+se_value,ymin=avg_value-se_value),
-                position="dodge",width=0.5, linewidth=0.5)+
-  # geom_boxplot() +
-  # geom_errorbar(aes(ymin = mean - se, ymax = mean + se), position = position_dodge(0.7), width = 0.25) +
-  labs(title = "GC HP vs LP",
-       x = "Conditions",
-       y = "Granger F-Values") +
-  theme_minimal()+
-  theme(legend.position = "right",panel.grid = element_blank(),strip.text=element_blank())+
-  ylim(0,1.5)
-
-ggplot(xdata.f_summary[xdata.m_summary$direction=="music2move",], aes(x = age, y = avg_value, fill = cond, group = cond)) +
-  geom_col(position="dodge", width=0.6)+ # , position=position_jitter(5)
-  geom_errorbar(aes(ymax=avg_value+se_value,ymin=avg_value-se_value),
-                position="dodge",width=0.5, linewidth=0.5)+
-  # geom_boxplot() +
-  # geom_errorbar(aes(ymin = mean - se, ymax = mean + se), position = position_dodge(0.7), width = 0.25) +
-  labs(title = "GC HP vs LP",
-       x = "Conditions",
-       y = "Granger F-Values") +
-  theme_minimal()+
-  theme(legend.position = "right",panel.grid = element_blank(),strip.text=element_blank())+
-  facet_grid(PM~"")
-
-
-
-library(dplyr)
-result <- ds_final %>%
-  group_by(Lags.f, Category, age,direction) %>%
-  summarize(t_test_p_value = t.test(X ~ cond, alternative="two.sided")$p.value)
-
-# Display the result
-print(result)
-
-##### Plots
-
-
-result <- result %>%
-  mutate(sig_line = ifelse(t_test_p_value < 0.005, 0, NA))
-
-
-# plotdf.f.wc <- ds_final[!ds_final$cond=="Control",]
-
-plotdf <- aggregate(X ~ age * Lags.f * Category * direction * cond,  data=ds_final, FUN="mean", na.rm=T)
-
-plotdf.sd <- aggregate(X ~ age * Lags.f * Category * direction * cond,  data=ds_final, FUN="SD", na.rm=T)
-colnames(plotdf.sd) <- list("age", "Lags.f","Category","direction","cond","SD")
-
-plotdf.f <- merge(plotdf,plotdf.sd, by=c("age", "Category", "Lags.f","direction","cond"),all.X=T)
-plotdf.f <- merge(plotdf.f,result, by=c("age", "Category", "Lags.f","direction"))
-
-plotdf.f$Lags <- as.numeric(plotdf.f$Lags)
-ggplot(data = plotdf.f[plotdf.f$direction=="music2move" & plotdf.f$Lags < 45,], aes(x = Lags, y = X, group=interaction(cond,Category), col=interaction(cond,Category))) +
-  # geom_point()+
-  geom_line() +
-  geom_ribbon(aes(ymin = X - (SD/sqrt(24)), ymax = X + (SD/sqrt(24))), alpha = 0.2) +  
-  # geom_vline(xintercept=4,linetype="dotted")+
-  # geom_vline(xintercept=5,linetype="dotted")+
-  # geom_vline(xintercept=12,linetype="dotted")+
-  # geom_vline(xintercept=19,linetype="dotted")+
-  # geom_vline(xintercept="3.52",linetype="dotted")+
-  geom_line(aes(y = sig_line),
-  color = "black", size = 1) +
-  labs(title = "", x = "Lags in seconds", y = "Granger Causality F-value")+
-  theme_minimal()+
-  theme(legend.position = "top")+
-  facet_grid(~age)
-
-ggplot(data = plotdf.f[plotdf.f$direction=="music2move",], aes(x = Lags.f, y = X, group=interaction(cond), col=interaction(cond))) +
-  # geom_point()+
-  geom_line() +
-  geom_ribbon(aes(ymin = X - (SD/sqrt(24)), ymax = X + (SD/sqrt(24))), alpha = 0.2) +  
-  geom_vline(xintercept=0,linetype="dotted")+
-  geom_vline(xintercept="0.44",linetype="dotted")+
-  geom_vline(xintercept="0.88",linetype="dotted")+
-  geom_vline(xintercept="1.76",linetype="dotted")+
-  geom_vline(xintercept="3.52",linetype="dotted")+
-  # geom_line(aes(y = sig_line),
-            # color = "red", size = 1) +
-  labs(title = "", x = "Lags in seconds", y = "Granger Causality F-value")+
-  theme_minimal()+
-  theme(legend.position = "top")+
-  facet_grid(age~PM)
+# 
+# 
+# # plot
+# desired_order <- c("3m", "6m", "12m")
+# xdata.m$age <- ordered(xdata.m$age, levels = desired_order)
+# xdata.f$age <- ordered(xdata.f$age, levels = desired_order)
+# 
+# xdata.m_summary <- ddply(xdata.m,.(PM,cond,age, direction),summarize,avg_value=mean(X,na.rm=TRUE),se_value=sd(X,na.rm=TRUE)/length(X))
+# xdata.f_summary <- ddply(xdata.f,.(PM,cond,age, direction),summarize,avg_value=mean(X,na.rm=TRUE),se_value=sd(X,na.rm=TRUE)/length(X))
+# 
+# xdata.m_summary_superPM <- ddply(xdata.m,.(cond,age,direction),summarize,avg_value=mean(X,na.rm=TRUE),se_value=sd(X,na.rm=TRUE)/length(X))
+# xdata.f_summary_superPM <- ddply(xdata.f,.(cond,age,direction),summarize,avg_value=mean(X,na.rm=TRUE),se_value=sd(X,na.rm=TRUE)/length(X))
+# 
+# 
+# ggplot(xdata.m_summary_superPM[xdata.m_summary_superPM$direction=="music2move",], aes(x = age, y = avg_value, fill = cond, group = cond)) +
+#   geom_col(position="dodge", width=0.6)+ # , position=position_jitter(5)
+#   geom_errorbar(aes(ymax=avg_value+se_value,ymin=avg_value-se_value),
+#                 position="dodge",width=0.5, linewidth=0.5)+
+#   # geom_boxplot() +
+#   # geom_errorbar(aes(ymin = mean - se, ymax = mean + se), position = position_dodge(0.7), width = 0.25) +
+#   labs(title = "GC Music vs Control",
+#        x = "Conditions",
+#        y = "Granger F-Values") +
+#   theme_minimal()+
+#   theme(legend.position = "right",panel.grid = element_blank(),strip.text=element_blank())+
+#   ylim(0,1.5)
+# 
+# ggplot(xdata.m_summary[xdata.m_summary$direction=="music2move",], aes(x = age, y = avg_value, fill = cond, group = cond)) +
+#   geom_col(position="dodge", width=0.6)+ # , position=position_jitter(5)
+#   geom_errorbar(aes(ymax=avg_value+se_value,ymin=avg_value-se_value),
+#                 position="dodge",width=0.5, linewidth=0.5)+
+#   # geom_boxplot() +
+#   # geom_errorbar(aes(ymin = mean - se, ymax = mean + se), position = position_dodge(0.7), width = 0.25) +
+#   labs(title = "GC Music vs Control",
+#        x = "Conditions",
+#        y = "Granger F-Values") +
+#   theme_minimal()+
+#   theme(legend.position = "right",panel.grid = element_blank(),strip.text=element_blank())+
+#   facet_grid(PM~"")
+# 
+# 
+# ggplot(xdata.f_summary_superPM[xdata.m_summary_superPM$direction=="music2move",], aes(x = age, y = avg_value, fill = cond, group = cond)) +
+#   geom_col(position="dodge", width=0.6)+ # , position=position_jitter(5)
+#   geom_errorbar(aes(ymax=avg_value+se_value,ymin=avg_value-se_value),
+#                 position="dodge",width=0.5, linewidth=0.5)+
+#   # geom_boxplot() +
+#   # geom_errorbar(aes(ymin = mean - se, ymax = mean + se), position = position_dodge(0.7), width = 0.25) +
+#   labs(title = "GC HP vs LP",
+#        x = "Conditions",
+#        y = "Granger F-Values") +
+#   theme_minimal()+
+#   theme(legend.position = "right",panel.grid = element_blank(),strip.text=element_blank())+
+#   ylim(0,1.5)
+# 
+# ggplot(xdata.f_summary[xdata.m_summary$direction=="music2move",], aes(x = age, y = avg_value, fill = cond, group = cond)) +
+#   geom_col(position="dodge", width=0.6)+ # , position=position_jitter(5)
+#   geom_errorbar(aes(ymax=avg_value+se_value,ymin=avg_value-se_value),
+#                 position="dodge",width=0.5, linewidth=0.5)+
+#   # geom_boxplot() +
+#   # geom_errorbar(aes(ymin = mean - se, ymax = mean + se), position = position_dodge(0.7), width = 0.25) +
+#   labs(title = "GC HP vs LP",
+#        x = "Conditions",
+#        y = "Granger F-Values") +
+#   theme_minimal()+
+#   theme(legend.position = "right",panel.grid = element_blank(),strip.text=element_blank())+
+#   facet_grid(PM~"")
+# 
+# 
+# 
+# library(dplyr)
+# result <- ds_final %>%
+#   group_by(Lags.f, Category, age,direction) %>%
+#   summarize(t_test_p_value = t.test(X ~ cond, alternative="two.sided")$p.value)
+# 
+# # Display the result
+# print(result)
+# 
+# ##### Plots
+# 
+# 
+# result <- result %>%
+#   mutate(sig_line = ifelse(t_test_p_value < 0.005, 0, NA))
+# 
+# 
+# # plotdf.f.wc <- ds_final[!ds_final$cond=="Control",]
+# 
+# plotdf <- aggregate(X ~ age * Lags.f * Category * direction * cond,  data=ds_final, FUN="mean", na.rm=T)
+# 
+# plotdf.sd <- aggregate(X ~ age * Lags.f * Category * direction * cond,  data=ds_final, FUN="SD", na.rm=T)
+# colnames(plotdf.sd) <- list("age", "Lags.f","Category","direction","cond","SD")
+# 
+# plotdf.f <- merge(plotdf,plotdf.sd, by=c("age", "Category", "Lags.f","direction","cond"),all.X=T)
+# plotdf.f <- merge(plotdf.f,result, by=c("age", "Category", "Lags.f","direction"))
+# 
+# plotdf.f$Lags <- as.numeric(plotdf.f$Lags)
+# ggplot(data = plotdf.f[plotdf.f$direction=="music2move" & plotdf.f$Lags < 45,], aes(x = Lags, y = X, group=interaction(cond,Category), col=interaction(cond,Category))) +
+#   # geom_point()+
+#   geom_line() +
+#   geom_ribbon(aes(ymin = X - (SD/sqrt(24)), ymax = X + (SD/sqrt(24))), alpha = 0.2) +  
+#   # geom_vline(xintercept=4,linetype="dotted")+
+#   # geom_vline(xintercept=5,linetype="dotted")+
+#   # geom_vline(xintercept=12,linetype="dotted")+
+#   # geom_vline(xintercept=19,linetype="dotted")+
+#   # geom_vline(xintercept="3.52",linetype="dotted")+
+#   # geom_line(aes(y = sig_line),
+#   # color = "black", size = 1) +
+#   labs(title = "", x = "Lags in seconds", y = "Granger Causality F-value")+
+#   theme_minimal()+
+#   theme(legend.position = "top")+
+#   facet_grid(~age)
+# 
+# ggplot(data = plotdf.f[plotdf.f$direction=="music2move",], aes(x = Lags.f, y = X, group=interaction(cond), col=interaction(cond))) +
+#   # geom_point()+
+#   geom_line() +
+#   geom_ribbon(aes(ymin = X - (SD/sqrt(24)), ymax = X + (SD/sqrt(24))), alpha = 0.2) +  
+#   geom_vline(xintercept=0,linetype="dotted")+
+#   geom_vline(xintercept="0.44",linetype="dotted")+
+#   geom_vline(xintercept="0.88",linetype="dotted")+
+#   geom_vline(xintercept="1.76",linetype="dotted")+
+#   geom_vline(xintercept="3.52",linetype="dotted")+
+#   # geom_line(aes(y = sig_line),
+#             # color = "red", size = 1) +
+#   labs(title = "", x = "Lags in seconds", y = "Granger Causality F-value")+
+#   theme_minimal()+
+#   theme(legend.position = "top")+
+#   facet_grid(age~PM)
 
 
 ### combine with EEG and test with P50 or P200
+
 xdata$Child <- factor(xdata$Child,levels = c("1","2","3","4","5","6","7",
                                                    "8","9","10","11","12","13",
                                                    "14","15","16","17","18","19",
@@ -838,8 +871,8 @@ xdata$Child <- factor(xdata$Child,levels = c("1","2","3","4","5","6","7",
 
 
 
-library(readxl)
-ERP_all_auc <- read_excel("C:/Users/tnguyen/OneDrive - Fondazione Istituto Italiano Tecnologia/IIT_Postdoc/WP4/MATLAB/MUSICOM_R/ERP_all_lat.xls")
+
+ERP_all_auc <- read_excel("~/OneDrive - Fondazione Istituto Italiano Tecnologia/IIT_Postdoc/WP4/MATLAB/MUSICOM_R/ERP_all_auc.xls")
 library(dplyr)
 
 # Rename condition variable
@@ -848,9 +881,9 @@ ERP_all_auc<- ERP_all_auc %>%
 ERP_all_auc <- ERP_all_auc %>%
   mutate(condition = ifelse(condition == "control", "Control", condition))
 ERP_all_auc <- ERP_all_auc %>%
-  mutate(condition = ifelse(condition == "lowbass", "Low Pitch", condition))
+  mutate(condition = ifelse(condition == "lowbass", "LowPitch", condition))
 ERP_all_auc <- ERP_all_auc %>%
-  mutate(condition = ifelse(condition == "highvoice", "High Pitch", condition))
+  mutate(condition = ifelse(condition == "highvoice", "HighPitch", condition))
 
 # Rename age variable
 ERP_all_auc <- ERP_all_auc %>%
@@ -881,10 +914,22 @@ df <- aggregate(amplitude ~ age + Child + cond, data=df_pc, FUN=mean)
 
 
 df$cond <- as.factor(df$cond)
+df$age <- as.factor(df$age)
 
-em.data <- merge(xdata,df, by=c("Child","cond","age"))
-m1 <- lmer(X ~ amplitude * PM * cond * age + (1|Child), #+ I(amplitude.w^2)
-           data=em.data[em.data$direction=="music2move",], na.action=na.omit)
+xdata$cond <- as.factor(xdata$cond)
+xdata$age <- as.factor(xdata$age)
+
+em.data <- merge(xdata,df, by=c("Child","cond", "age"), all.y=T)
+em.data1d <- em.data[em.data$direction=="music2move",]
+
+em.data.mus <- em.data1d[em.data1d$cond=="Music" | em.data1d$cond=="Control",]
+em.data.freq <- em.data1d[em.data1d$cond=="HighPitch"|em.data1d$cond=="LowPitch",]
+
+em.data.mus$amplitude.w.z <- scale(Winsorize(em.data.mus$amplitude, na.rm=T))
+
+
+m1 <- lmer(X ~ amplitude  * cond * age + (1+amplitude|Child), #+ I(amplitude.w^2)
+           data=em.data.freq, na.action=na.omit)
 summary(m1)
 Anova(m1,2)
 
@@ -892,4 +937,59 @@ plot(effect('amplitude:cond',m1))
 plot(effect('amplitude:cond:age',m1))
 
 emtrends(m1, pairwise~cond|age,var="amplitude" )
+emtrends(m1, pairwise~cond,var="amplitude" )
+emtrends(m1, pairwise~age,var="amplitude" )
 
+## load assr for assr granger analyses
+
+library(readxl)
+power_music <- read_excel("~/OneDrive - Fondazione Istituto Italiano Tecnologia/IIT_Postdoc/WP4/MATLAB/MUSICOM_R/power_stats.xlsx", 
+                          col_types = c("text", "text", "text", 
+                                        "numeric"), 
+                          sheet = "music")
+power_control <- read_excel("~/OneDrive - Fondazione Istituto Italiano Tecnologia/IIT_Postdoc/WP4/MATLAB/MUSICOM_R/power_stats.xlsx", 
+                            col_types = c("text", "text", "text", 
+                                          "numeric"), 
+                            sheet = "control")
+power_lowbass <- read_excel("~/OneDrive - Fondazione Istituto Italiano Tecnologia/IIT_Postdoc/WP4/MATLAB/MUSICOM_R/power_stats.xlsx", 
+                            col_types = c("text", "text", "text", 
+                                          "numeric"), 
+                            sheet = "lowbass")
+power_highvoice <- read_excel("~/OneDrive - Fondazione Istituto Italiano Tecnologia/IIT_Postdoc/WP4/MATLAB/MUSICOM_R/power_stats.xlsx", 
+                              col_types = c("text", "text", "text", 
+                                            "numeric"), 
+                              sheet = "highvoice")
+
+power_all <- rbind(power_music,power_control,power_lowbass,power_highvoice)
+power_all$power.z <- scale(power_all$power,center = F)[,1]
+power_all$power.w.z <-DescTools::Winsorize(power_all$power.z)
+
+
+power_mus <- power_all
+power_mus$age <- factor(power_mus$age,levels=c("3","6","12","ad"), labels=c("3m","6m","12m","ad"))
+power_mus$condition <- factor(power_mus$condition,levels=c("music","control", "highvoice", "lowbass"), labels=c("Music","Control", "HighPitch", "LowPitch"))
+
+power_mus$cond <- as.factor(power_mus$condition)
+power_mus$age <- as.factor(power_mus$age)
+power_mus$Child <- as.factor(power_mus$ID)
+
+power_mus.data <- merge(xdata,power_mus, by=c("Child","cond", "age"), all=T)
+
+power_mus.data1d <- power_mus.data[power_mus.data$direction=="music2move",]
+
+am.data.mus <- power_mus.data1d[power_mus.data1d$cond=="Music" | power_mus.data1d$cond=="Control",]
+am.data.freq <- power_mus.data1d[power_mus.data1d$cond=="HighPitch"|power_mus.data1d$cond=="LowPitch",]
+
+
+
+m1 <- lmer(X ~  cond * age*power.w.z + (1|Child), #+ I(amplitude.w^2)
+           data=am.data.freq, na.action=na.omit)
+summary(m1)
+Anova(m1,3)
+
+plot(effect('cond:power.w.z',m1))
+plot(effect('amplitude:cond:age',m1))
+
+emtrends(m1, pairwise~cond|age,var="amplitude" )
+emtrends(m1, pairwise~cond,var="amplitude" )
+emtrends(m1, pairwise~age,var="amplitude" )
