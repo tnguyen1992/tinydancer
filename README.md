@@ -2,8 +2,8 @@
 
 General Description
 ============================
-This contains the code for the manuscript "Development of Auditory and Sponatenous Movement Responses to Music over the First Year of Life".
-The dataset will be available upon publication: tba.
+This contains the code for the manuscript "Development of Auditory and Sponatenous Movement Responses to Music over the First Year of Life" (https://doi.org/10.7554/eLife.107088.4).
+The dataset is available in the following repository: https://doi.org/10.48557/DCSCFO.
 
 Authors
 ============================
